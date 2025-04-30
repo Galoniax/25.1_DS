@@ -1,0 +1,23 @@
+services:
+  postgres:
+    image: postgres:latest
+    environment:
+      - POSTGRES_DB=MyMarketing    # Nombre de la base de datos
+      - POSTGRES_USER=galoniax  # Nombre del usuario
+      - POSTGRES_PASSWORD=1234  # Contraseña para el usuario
+    ports:
+      - 5432:5432  # Puerto de conexión a la base de datos
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data  # Persistencia de datos (Todos los datos de las tablas)
+
+  pgadmin: #Administrador gráfico
+    image: dpage/pgadmin4:latest 
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=axelian2504@gmail.com
+      - PGADMIN_DEFAULT_PASSWORD=1234
+    ports:
+      - 5050:80 #8080
+    volumes:
+      - ./pgadmin_data:/var/lib/pgadmin
+
+# Correr con docker-compose up -d

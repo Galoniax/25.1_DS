@@ -1,0 +1,159 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Cliente {
+  id_cliente     Int      @id @default(autoincrement())
+  nombre         String
+  email          String   @unique
+  telefono       String
+  fecha_registro DateTime
+  ventas         Venta[]
+
+  @@index([email], name: "idx_cliente_email")
+}
+
+model Sucursal {
+  id_sucursal Int    @id @default(autoincrement())
+  nombre      String
+  ubicacion   String
+
+  fuenteDatos FuenteDatos[]
+  stocks      Stock[]
+  ventas      Venta[]
+  reportes    Reporte[]
+  users       User[]
+}
+
+model FuenteDatos {
+  id_fuente     Int      @id @default(autoincrement())
+  id_sucursal   Int
+  tipo          String
+  configuracion Json
+  updated_at    DateTime @updatedAt
+
+  sucursal Sucursal @relation(fields: [id_sucursal], references: [id_sucursal])
+
+  @@index([id_sucursal], name: "idx_fuente_datos_id_sucursal")
+}
+
+model CategoriaProducto {
+  id_categoria_producto Int        @id @default(autoincrement())
+  nombre                String
+  productos             Producto[]
+}
+
+model Producto {
+  id_producto           Int     @id @default(autoincrement())
+  id_categoria_producto Int
+  nombre                String
+  precio                Float
+  descripcion           String?
+  activo                Boolean @default(true)
+
+  categoriaProducto CategoriaProducto @relation(fields: [id_categoria_producto], references: [id_categoria_producto])
+  stocks            Stock[]
+  ventaProductos    VentaProducto[]
+
+  @@index([nombre], name: "idx_producto_nombre")
+  @@index([precio], name: "idx_producto_precio")
+}
+
+model Stock {
+  id_stock    Int @id @default(autoincrement())
+  id_sucursal Int
+  id_producto Int
+  cantidad    Int
+
+  sucursal    Sucursal          @relation(fields: [id_sucursal], references: [id_sucursal])
+  producto    Producto          @relation(fields: [id_producto], references: [id_producto])
+  movimientos MovimientoStock[]
+
+  @@index([id_sucursal], name: "idx_stock_id_sucursal")
+  @@index([id_producto], name: "idx_stock_id_producto")
+}
+
+model MovimientoStock {
+  id_movimiento_stock Int @id @default(autoincrement())
+  cantidad            Int
+  id_stock            Int
+
+  stock          Stock           @relation(fields: [id_stock], references: [id_stock])
+  ventaProductos VentaProducto[]
+
+  @@index([id_stock], name: "idx_movimiento_stock_id_stock")
+}
+
+model Venta {
+  id_venta    Int      @id @default(autoincrement())
+  id_cliente  Int
+  id_sucursal Int
+  fecha       DateTime
+  total       Float
+
+  cliente   Cliente         @relation(fields: [id_cliente], references: [id_cliente])
+  sucursal  Sucursal        @relation(fields: [id_sucursal], references: [id_sucursal])
+  productos VentaProducto[]
+
+  @@index([id_cliente], name: "idx_venta_id_cliente")
+  @@index([id_sucursal], name: "idx_venta_id_sucursal")
+}
+
+model VentaProducto {
+  id_venta_producto   Int    @id @default(autoincrement())
+  id_venta            Int
+  id_producto         Int
+  id_movimiento_stock Int
+  nombre_producto     String
+  cantidad            Int
+  precio_unitario     Float
+
+  venta           Venta           @relation(fields: [id_venta], references: [id_venta])
+  producto        Producto        @relation(fields: [id_producto], references: [id_producto])
+  movimientoStock MovimientoStock @relation(fields: [id_movimiento_stock], references: [id_movimiento_stock])
+
+  @@index([id_venta], name: "idx_venta_producto_id_venta")
+  @@index([id_producto], name: "idx_venta_producto_id_producto")
+  @@index([id_movimiento_stock], name: "idx_venta_producto_id_movimiento_stock")
+
+}
+
+model Reporte {
+  id_reporte     Int      @id @default(autoincrement())
+  fecha_creacion DateTime
+  ruta_archivo   String
+  id_sucursal    Int?
+
+  sucursal Sucursal? @relation(fields: [id_sucursal], references: [id_sucursal])
+
+  @@index([id_sucursal], name: "idx_reporte_id_sucursal")
+}
+
+model User {
+  id_user     Int    @id @default(autoincrement())
+  email       String @unique
+  password    String
+  role        Role
+  id_sucursal Int?
+
+  sucursal Sucursal? @relation(fields: [id_sucursal], references: [id_sucursal])
+
+  @@index([email], name: "idx_user_email")
+  @@index([id_sucursal], name: "idx_user_id_sucursal")
+}
+
+enum Role {
+  marketing
+  sucursal
+}
