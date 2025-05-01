@@ -1,0 +1,366 @@
+openapi: 3.0.0
+info:
+  title: Sistema de Equipo de Marketing
+  version: 1.0.0
+  description: "Esta documentación de Inferfaz, declara los posibles endpoints de la API del sistema de equipo de marketing. \n\n Se presentarán algunos ejemplos de posibles peticiones y respuestas que puede realizar el cliente (equipo marketing) desde la capa Frontend. \n\n De paso se presentará la estructura de los datos que se espera recibir y enviar."
+tags:
+  - name: Venta
+    description: Gestión de ventas
+
+paths:
+  /api/v1/ventas/:
+    get:
+      tags: [Venta]
+      summary: Obtener todas las ventas registradas en la base de datos
+      description: Este endpoint permite obtener todas las ventas registradas en la base de datos. La respuesta incluirá una lista de objetos de venta.
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Venta'
+              example:
+                - id_venta: 1
+                  id_cliente: 1
+                  id_sucursal: 1
+                  fecha: "2023-10-01T12:00:00Z"
+                  total: 100.50
+                - id_venta: 2
+                  id_cliente: 2
+                  id_sucursal: 2
+                  fecha: "2023-10-02T14:30:00Z"
+                  total: 200.75
+        404:
+          description: No se encontraron ventas
+        500:
+          description: Error interno del servidor
+  /api/v1/ventas/{id}:
+    get:
+      tags: [Venta]
+      summary: Obtener una venta por su ID
+      description: Este endpoint permite obtener los datos de una venta específica utilizando su ID. La respuesta incluirá un objeto de venta con sus detalles.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Venta'
+              example:
+                - id_venta: 12
+                  id_cliente: 4
+                  id_sucursal: 5
+                  fecha: "2025-08-10T15:30:00.000Z"
+                  total: 300.00
+                  productos:
+                    - id_venta_producto: 1
+                      id_venta: 12
+                      id_producto: 1
+                      id_movimiento_stock: 302
+                      nombre_producto: "Producto A"
+                      cantidad: 1
+                      precio_unitario: 150.00
+                      producto:
+                        id_producto: 1
+                        nombre: "Producto A"
+                        precio: 150.00
+                        description: "Descripción del producto A"
+                        activo: true
+                    - id_venta_producto: 2
+                      id_venta: 12
+                      id_producto: 2
+                      id_movimiento_stock: 303
+                      nombre_producto: "Producto B"
+                      cantidad: 1
+                      precio_unitario: 150.00
+                      producto:
+                        id_producto: 2
+                        nombre: "Producto B"
+                        precio: 150.00
+                        description: "Descripción del producto B"
+                        activo: true
+                  sucursal:
+                    id_sucursal: 5
+                    nombre: "Sucursal 5"
+                    ubicacion: "Calle 5, Ciudad 5"
+
+        404:
+          description: Venta no encontrada
+        500:
+          description: Error interno del servidor
+         
+  /api/v1/ventas/sucursal/{id_sucursal}:
+    get:
+      tags: [Venta]
+      summary: Obtener ventas por sucursal
+      description: Este endpoint permite obtener todas las ventas de una sucursal específica utilizando su ID. La respuesta incluirá una lista de objetos de venta.
+      parameters:
+        - in: path
+          name: id_sucursal
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: OK
+        404:
+          description: No se encontraron ventas para la sucursal especificada
+        500:
+          description: Error interno del servidor
+          
+
+components:
+  schemas:
+   
+    Sucursal:
+      type: object
+      properties:
+        id_sucursal:
+          type: integer
+          description: Identificador único de la sucursal
+          example: 1
+        nombre:
+          type: string
+          description: Nombre de la sucursal
+          example: "Sucursal 1"
+        ubicacion:
+          type: string
+          description: Ubicación de la sucursal
+          example: "Calle 1, Ciudad 1"
+        activo:
+          type: boolean
+          description: Estado de la sucursal (activo/inactivo)
+          example: true
+
+    Venta:
+      type: object
+      properties:
+        id_venta:
+          type: integer
+          description: Identificador único de la venta
+          example: 323
+        id_cliente:
+          type: integer
+          description: Identificador único del cliente
+          example: 43
+        id_sucursal:
+          type: integer
+          description: Identificador único de la sucursal
+          example: 2
+        fecha:
+          type: string
+          format: date-time
+          description: Fecha y hora de la venta
+          example: "2023-10-01T12:00:00Z"
+        total:
+          type: number
+          description: Total de la venta
+          example: 100.50
+
+    Producto:
+      type: object
+      properties:
+        id_producto:
+          type: integer
+          description: Identificador único del producto
+          example: 67
+        nombre:
+          type: string
+          description: Nombre del producto
+          example: "Producto X"
+        precio:
+          type: number
+          description: Precio del producto
+          example: 99.99
+        description:
+          type: string
+          description: Descripción del producto
+          example: "Descripción del producto X"
+        activo:
+          type: boolean
+          description: Estado del producto (activo/inactivo)
+          example: true
+
+    VentaProducto:
+      type: object
+      properties:
+        id_venta_producto:
+          type: integer
+          description: Identificador único de la venta_producto
+          example: 1
+        id_venta:
+          type: integer
+          description: Identificador único de la venta
+          example: 1
+        id_producto:
+          type: integer
+          description: Identificador único del producto
+          example: 1
+        id_movimiento_stock:
+          type: integer
+          description: Identificador único del movimiento de stock
+          example: 1
+        nombre_producto:
+          type: string
+          description: Nombre del producto
+          example: "Producto A"
+        cantidad:
+          type: integer
+          description: Cantidad del producto vendido
+          example: 2
+        precio_unitario:
+          type: number
+          description: Precio unitario del producto
+          example: 50.00
+
+    User:
+      type: object
+      properties:
+        id_user:
+          type: integer
+          description: Identificador único del usuario
+          example: 1
+        email:
+          type: string
+          description: Correo electrónica del usuario
+          example: "ZKt9i@example.com"
+        password:
+          type: string
+          description: Contraseña del usuario
+          example: "password123"
+        role:
+          type: enum
+          enum: [marketing, sucursal]
+          description: Rol del usuario (admin, user, etc.)
+          example: "admin"
+        id_sucursal:
+          type: integer
+          description: Identificador único de la sucursal a la que pertenece el usuario
+          example: 1
+    
+    Cliente:
+      type: object
+      properties:
+        id_cliente:
+          type: integer
+          description: Identificador único del cliente
+          example: 1
+        nombre:
+          type: string
+          description: Nombre del cliente
+          example: "Juan Pérez"
+        email:
+          type: string
+          description: Correo electrónico del cliente
+          example: "bV9v1@example.com"
+        telefono:
+          type: string
+          description: Número de teléfono del cliente
+          example: "+1234567890"
+        fecha_registro:
+          type: string
+          format: date-time
+          description: Fecha y hora de registro del cliente
+          example: "2023-10-01T12:00:00Z"
+    
+    CategoriaProducto:
+      type: object
+      properties:
+        id_categoria_producto:
+          type: integer
+          description: Identificador único de la categoría de producto
+          example: 1
+        nombre:
+          type: string
+          description: Nombre de la categoría de producto
+          example: "Electrónica"
+
+    Stock:
+      type: object
+      properties:
+        id_stock:
+          type: integer
+          description: Identificador único del stock
+          example: 1
+        id_producto:
+          type: integer
+          description: Identificador único del producto
+          example: 1
+        cantidad:
+          type: integer
+          description: Cantidad disponible en stock
+          example: 100
+        id_sucursal:
+          type: integer
+          description: Identificador único de la sucursal a la que pertenece el stock
+          example: 1
+
+    MovimientoStock:
+      type: object
+      properties:
+        id_movimiento_stock:
+          type: integer
+          description: Identificador único del movimiento de stock
+          example: 1     
+        cantidad:
+          type: integer
+          description: Cantidad del movimiento de stock
+          example: 50
+        id_stock:
+          type: integer
+          description: Identificador único del stock
+          example: 1
+
+    Reporte:
+      type: object
+      properties:
+        id_reporte:
+          type: integer
+          description: Identificador único del reporte
+          example: 1
+        fecha_creacion:
+          type: string
+          format: date-time
+          description: Fecha y hora de inicio del reporte
+          example: "2023-10-01T00:00:00Z"
+        ruta_archivo:
+          type: string
+          description: Ruta del archivo del reporte
+          example: "/reportes/reporte_2023-10-01.csv"
+        id_sucursal:
+          type: integer
+          description: Identificador único de la sucursal a la que pertenece el reporte
+          example: 1
+
+    FuenteDatos:
+      type: object
+      properties:
+        id_fuente_datos:
+          type: integer
+          description: Identificador único de la fuente de datos
+          example: 1
+          
+        tipo:
+          type: string
+          description: Tipo de fuente de datos (API, Base de Datos, etc.)
+          example: "Base de Datos"
+        configuracion:
+          type: json
+          description: Configuración de la fuente de datos (ejemplo-> URL de API, archivo de Base de Datos, , etc.)
+          example: "URL: http://api.example.com, User: admin, Password: password"
+        updated_at:
+          type: string
+          format: date-time
+          description: Fecha y hora de la última actualización de la fuente de datos
+          example: "2023-10-01T12:00:00Z"
