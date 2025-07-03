@@ -7,6 +7,11 @@ Además, incluye documentación interactiva mediante Swagger UI para facilitar l
 
 El objetivo principal es centralizar y automatizar el acceso a los datos de ventas para integrarlos con otros procesos del negocio, como análisis, generación de reportes y monitoreo. 
 
+## 3/07 Update:
+El sistema (luego de realizar los scripts para levantar), permite el inicio y registros de usuarios ya sean de marketing o de sucursal (los de sucursal necesitan si o si tener un id_sucursal). El sistema le permite a usuarios de una sucursal cargar archivos CSV para que sean analizados y cargados en la base de datos. Con el cron, se podrá realizar un reporte (que será guardado en la carpeta reports) con el cual se podrán ver todas las ventas de los diferentes CSVs cargados en el día "El cron se realiza alrededor de las 23:00pm". Para subir archivos como usuario de sucursal, el usuario debe haber iniciado sesión y con ello introducir el token de autenticación.
+- En el GitHub, hay un archivo CSV (archivo-1751553972642-805255235.csv) con el que se puede realizar la prueba de carga.
+- Si se quiere realizar un reporte ahora mismo, se deben eliminar los // de la función scheduler.ejecutarManual() dentro del archivo server.js
+
 ## Tecnologías aplicadas
 - **JavaScript**
 - **Express.js**
@@ -35,7 +40,6 @@ El objetivo principal es centralizar y automatizar el acceso a los datos de vent
 6. Inicialización
    - ```npm run dev```
   
-
 ---
 
 ## Dependencias 
@@ -45,6 +49,15 @@ El objetivo principal es centralizar y automatizar el acceso a los datos de vent
 - swagger-ui-express (^5.0.1): Middleware para servir la documentación Swagger desde Express.
 - yamljs (^0.3.0): Carga y parsea archivos .yaml (como la documentación Swagger).
 - nodemon (^3.1.9): Reinicia automáticamente el servidor al detectar cambios en el código.
+- bcrypt (^6.0.0): Una librería para hashear contraseñas.
+- cors (^2.8.5): CORS (Cross-Origin Resource Sharing) es un middleware de Express que permite que tu backend maneje solicitudes de diferentes orígenes.
+- csv-parser (^3.2.0): Un módulo Node.js simple y eficiente para analizar archivos CSV (valores separados por comas).
+- exceljs (^4.4.0): Una librería para leer, escribir y manipular archivos de Excel (XLSX).
+- fs (^0.0.1): El módulo File System incorporado de Node.js. Proporciona métodos para interactuar con el sistema de archivos, como leer o escribir en archivos.
+- jsonwebtoken (^9.0.2): Una librería para implementar JSON Web Tokens (JWT). Los JWTs se utilizan comúnmente para la autenticación.
+- multer (^2.0.1): Un middleware de Express para manejar multipart/form-data, utilizado principalmente para subir archivos
+- node-cron (^4.1.1): Un módulo para programar tareas (cron jobs) en Node.js.
+- yamljs (^0.3.0): Un analizador y "stringifier" de JavaScript para YAML
 
 ### Comandos
 - npm init -y
@@ -58,7 +71,7 @@ El objetivo principal es centralizar y automatizar el acceso a los datos de vent
 ---
 ## Documentación (Swagger + SRS)
 - https://docs.google.com/document/d/11GSC8PjYjjmDLd3NCeVXezoTDtOBnSn4pjL3kbu48hA/edit?usp=sharing
-- http://localhost:5000/api-docs (Swagger) (npm run dev + docker-compose up)
+- http://localhost:3000/api-docs (Swagger) (npm run dev + docker-compose up)
 ---
 
 
