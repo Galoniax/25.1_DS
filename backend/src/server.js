@@ -1,32 +1,59 @@
 import express from "express";
-import { swaggerDocs } from "./docs/swagger.js";
-
-import { API_PREFIX } from "./config/config.js";
-
-import __dirname from "../dirname.js";
-
+import cors from "cors";
 import path from "path";
+import fs from "fs";
+
+
+import { authRouter } from "./routes/authRoutes.js";
+import { uploadRouter } from "./routes/uploadRoutes.js";
+import { reportRouter } from "./routes/reportRoutes.js";
+import { ventaRouter } from "./routes/ventaRoutes.js";
+import { userRouter } from "./routes/userRoutes.js";
+import { sucursalRouter } from "./routes/sucursalRoutes.js";
+import { categoriaRouter } from "./routes/categoriaRoutes.js";
+import { DailyScheduler } from "./scheduler/dailyScheduler.js";
+
+import { API_PREFIX, SECRET_KEY } from "./config/config.js";
+
+import { swaggerDocs } from './docs/swagger.js';
 
 const app = express();
-const port = 5000;
+const PORT = process.env.PORT || 3000;
 
-import { ventaRouter } from "./routes/ventaRoutes.js";
+// Crear carpetas necesarias
+["uploads","reports","archive"].forEach(dir=> {
+  const full = path.join(process.cwd(),dir);
+  if(!fs.existsSync(full)) fs.mkdirSync(full,{recursive:true});
+});
 
-// Middleware para parsear el cuerpo de las peticiones
-app.use(express.json());
+// Middlewares
+app.use(cors());
+app.use(express.json({limit:"50mb"}));
+app.use(express.urlencoded({limit:"50mb",extended:true}));
+app.use("/reports",express.static(path.join(process.cwd(),"reports")));
 
-// Middleware para servir archivos estáticos desde la carpeta "public"
-app.use(express.static(path.join(__dirname, "public")));
+// Rutas
+app.use(`${API_PREFIX}/auth`,authRouter);
+app.use(`${API_PREFIX}/upload`,uploadRouter);
+app.use(`${API_PREFIX}/reports`,reportRouter);
+app.use(`${API_PREFIX}/ventas`,ventaRouter);
+app.use(`${API_PREFIX}/users`,userRouter);
+app.use(`${API_PREFIX}/sucursales`,sucursalRouter);
+app.use(`${API_PREFIX}/categorias`,categoriaRouter);
 
-// Middleware para parsear el cuerpo de las peticiones
-app.use(express.urlencoded({ extended: true }));
-
-// Endpoint
-app.use(`${API_PREFIX[0]}/ventas`, ventaRouter);
-
-// Documentación de la API
 swaggerDocs(app);
 
-app.listen(port, () => {
-  console.log(`Servidor escuchando en el puerto ${port}`);
+// Health-check y 404
+app.get("/health",(req,res)=>res.json({ok:true}));
+app.use((_,res)=>res.status(404).json({error:"No encontrado"}));
+
+// Iniciar el scheduler diario
+const scheduler = new DailyScheduler();
+scheduler.iniciar();
+
+//scheduler.ejecutarManual();
+
+
+app.listen(PORT,()=>{
+  console.log("Servidor en puerto",PORT);
 });
