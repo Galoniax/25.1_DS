@@ -26,8 +26,9 @@ model Cliente {
 
 model Sucursal {
   id_sucursal Int    @id @default(autoincrement())
-  nombre      String
+  nombre      String @unique
   ubicacion   String
+  activo Boolean @default(true)
 
   fuenteDatos FuenteDatos[]
   stocks      Stock[]
@@ -50,7 +51,7 @@ model FuenteDatos {
 
 model CategoriaProducto {
   id_categoria_producto Int        @id @default(autoincrement())
-  nombre                String
+  nombre                String     @unique
   productos             Producto[]
 }
 
@@ -126,14 +127,17 @@ model VentaProducto {
   @@index([id_venta], name: "idx_venta_producto_id_venta")
   @@index([id_producto], name: "idx_venta_producto_id_producto")
   @@index([id_movimiento_stock], name: "idx_venta_producto_id_movimiento_stock")
-
 }
 
 model Reporte {
   id_reporte     Int      @id @default(autoincrement())
   fecha_creacion DateTime
+  nombre_archivo String
   ruta_archivo   String
-  id_sucursal    Int?
+  registros      Int
+  peso_archivo   Int
+
+  id_sucursal Int?
 
   sucursal Sucursal? @relation(fields: [id_sucursal], references: [id_sucursal])
 
