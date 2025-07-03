@@ -2,19 +2,336 @@ openapi: 3.0.0
 info:
   title: Sistema de Equipo de Marketing
   version: 1.0.0
-  description: "Esta documentación de Inferfaz, declara los posibles endpoints de la API del sistema de equipo de marketing. \n\n Se presentarán algunos ejemplos de posibles peticiones y respuestas que puede realizar el cliente (equipo marketing) desde la capa Frontend. \n\n De paso se presentará la estructura de los datos que se espera recibir y enviar."
+  description: "Esta documentación de Interfaz, declara los posibles endpoints de la API del sistema de equipo de marketing. \n\n Se presentarán algunos ejemplos de posibles peticiones y respuestas que puede realizar el cliente (equipo marketing) desde la capa Frontend. \n\n De paso se presentará la estructura de los datos que se espera recibir y enviar."
+
 tags:
+  - name: Auth
+    description: Autenticación de usuarios
+  - name: Upload
+    description: Subida de archivos
   - name: Venta
     description: Gestión de ventas
+  - name: Categoria
+    description: Gestión de categorias
+  
+  
 
 paths:
-  /api/v1/ventas/:
+  /api/v1/auth/login:
+    post:
+      tags: [Auth]
+      summary: Autenticación de usuario
+      description: Este endpoint permite autenticar a un usuario utilizando sus credenciales. La respuesta incluirá un token de autenticación.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: Correo electrónico del usuario
+                password:
+                  type: string
+                  description: Contraseña del usuario
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: Autenticación exitosa
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: Token de autenticación JWT
+              example:
+                token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZF91c2VyIjo1LCJlbWFpbCI6InN1Y3Vyc2FsQGVtcHJlc2EuY29tIiwicm9sZSI6InN1Y3Vyc2FsIiwiaWF0IjoxNzUxNTUyMzE1LCJleHAiOjE3NTE2Mzg3MTV9.2qGe3Z3NcglMmpOvtv0mV9IPiROviJdCITcY_HeSFns
+        '401':
+          description: Credenciales inválidas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Mensaje de error
+              example:
+                message: "El email no está registrado o Contraseña incorrecta" 
+        '500':
+          description: Error interno del servidor
+
+  /api/v1/auth/register:
+    post:
+      tags: [Auth]
+      summary: Registro de usuario
+      description: Este endpoint permite registrar un nuevo usuario. La respuesta incluirá un token de autenticación.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: Correo electrónico del usuario
+                password:
+                  type: string
+                  description: Contraseña del usuario
+                role:
+                  type: string
+                  description: Rol del usuario
+                id_sucursal:
+                  type: integer
+                  description: ID de la sucursal del usuario
+              required:
+                - email
+                - password
+                - role
+      responses:
+        '201':
+          description: Registro exitoso
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                id_user: 1
+                email: "sucursal@empresa.com"
+                password: "admin123"
+                role: "sucursal"
+                id_sucursal: 1
+        '409':
+          description: El email ya esta registrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Mensaje de error
+              example:
+                message: "El email ya esta registrado"
+        '400':
+          description: Datos faltantes o Rol no permitido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Mensaje de error
+              example:
+                message: "Faltan datos requeridos o Rol no permitido"
+        '500':
+          description: Error interno del servidor      
+
+  /api/v1/upload/:
+    post:
+      tags: [Upload]
+      summary: Subida de archivos
+      description: Este endpoint permite subir archivos al servidor. La respuesta incluirá un mensaje de confirmación.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+              required:
+                - file
+      responses:
+        '200':
+          description: Archivo subido exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: Mensaje de confirmación
+                  message:
+                    type: string
+                    description: Mensaje de confirmación
+                  data: 
+                    type: object
+                    properties:
+                      archivo:
+                        type: string
+                        description: Nombre del archivo
+                        example: "archivo.csv"
+                        required: true
+                      procesados:   
+                        type: integer
+                        description: Cantidad de registros procesados
+                        example: 10
+                        required: true
+                      duplicados:
+                        type: integer
+                        description: Cantidad de registros duplicados
+                        example: 0
+                        required: true
+                      total: 
+                        type: integer
+                        description: Cantidad total de registros
+                        example: 10
+                        required: true
+              example:
+                success: "true"
+                message: "Archivo procesado exitosamente"
+                data:
+                  archivo: "archivo.csv"
+                  procesados: 10
+                  duplicados: 0
+                  total: 10
+        '400':
+          description: Archivo no subido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: Mensaje de confirmación
+                  message:
+                    type: string
+                    description: Mensaje de confirmación
+              example:
+                success: "false"
+                message: "No se proporcionó ningún archivo"
+        '500':
+          description: Error interno del servidor
+  
+  /api/v1/categorias/:
+    get:
+      tags: [Categoria]
+      summary: Obtener todas las categorias registradas en la base de datos
+      description: Este endpoint permite obtener todas las categorias registradas en la base de datos. La respuesta incluirá una lista de objetos de categoria.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoriaProducto'
+        '404':
+          description: Categorias no encontradas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Mensaje de error
+              example:
+                message: "Categorias no encontradas."
+        '500':
+          description: Error interno del servidor
+  
+  /api/v1/categorias/{id}:
+    get:
+      tags: [Categoria]
+      summary: Obtener una categoria por su ID
+      description: Este endpoint permite obtener una categoria por su ID. La respuesta incluirá un objeto de categoria.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoriaProducto'
+              example:
+                id_categoria_producto: 1 
+                nombre: "Categoria 1"
+                productos: 
+                  id_producto: 1
+                  id_categoria_producto: 1
+                  nombre: "Producto 1"
+                  precio: 100
+                  description: "Descripción del producto 1"
+                  activo: true                               
+        '404':
+          description: Categoria no encontrada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Mensaje de error
+              example:
+                message: "Categoria no encontrada."
+        '500':
+          description: Error interno del servidor
+
+  /api/v1/categorias/create:
+    post:
+      tags: [Categoria]
+      summary: Crear una nueva categoria
+      description: Este endpoint permite crear una nueva categoria. La respuesta incluirá un objeto de categoria.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoriaProducto'
+              required: 
+                - nombre
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoriaProducto'
+              example:
+                id_categoria_producto: 1 
+                nombre: "Categoria 1"
+        '400':
+          description: Datos inválidos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Mensaje de error
+              example:
+                message: "Categoria no creada."
+        '500':
+          description: Error interno del servidor
+
+  /api/v1/ventas:
     get:
       tags: [Venta]
       summary: Obtener todas las ventas registradas en la base de datos
       description: Este endpoint permite obtener todas las ventas registradas en la base de datos. La respuesta incluirá una lista de objetos de venta.
       responses:
-        200:
+        '200':
           description: OK
           content:
             application/json:
@@ -33,10 +350,11 @@ paths:
                   id_sucursal: 2
                   fecha: "2023-10-02T14:30:00Z"
                   total: 200.75
-        404:
+        '404':
           description: No se encontraron ventas
-        500:
+        '500':
           description: Error interno del servidor
+
   /api/v1/ventas/{id}:
     get:
       tags: [Venta]
@@ -49,55 +367,52 @@ paths:
           schema:
             type: integer
       responses:
-        200:
+        '200':
           description: OK
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Venta'
+                $ref: '#/components/schemas/VentaDetallada'
               example:
-                - id_venta: 12
-                  id_cliente: 4
-                  id_sucursal: 5
-                  fecha: "2025-08-10T15:30:00.000Z"
-                  total: 300.00
-                  productos:
-                    - id_venta_producto: 1
-                      id_venta: 12
+                id_venta: 12
+                id_cliente: 4
+                id_sucursal: 5
+                fecha: "2025-08-10T15:30:00.000Z"
+                total: 300.00
+                productos:
+                  - id_venta_producto: 1
+                    id_venta: 12
+                    id_producto: 1
+                    id_movimiento_stock: 302
+                    nombre_producto: "Producto A"
+                    cantidad: 1
+                    precio_unitario: 150.00
+                    producto:
                       id_producto: 1
-                      id_movimiento_stock: 302
-                      nombre_producto: "Producto A"
-                      cantidad: 1
-                      precio_unitario: 150.00
-                      producto:
-                        id_producto: 1
-                        nombre: "Producto A"
-                        precio: 150.00
-                        description: "Descripción del producto A"
-                        activo: true
-                    - id_venta_producto: 2
-                      id_venta: 12
+                      nombre: "Producto A"
+                      precio: 150.00
+                      description: "Descripción del producto A"
+                      activo: true
+                  - id_venta_producto: 2
+                    id_venta: 12
+                    id_producto: 2
+                    id_movimiento_stock: 303
+                    nombre_producto: "Producto B"
+                    cantidad: 1
+                    precio_unitario: 150.00
+                    producto:
                       id_producto: 2
-                      id_movimiento_stock: 303
-                      nombre_producto: "Producto B"
-                      cantidad: 1
-                      precio_unitario: 150.00
-                      producto:
-                        id_producto: 2
-                        nombre: "Producto B"
-                        precio: 150.00
-                        description: "Descripción del producto B"
-                        activo: true
-                  sucursal:
-                    id_sucursal: 5
-                    nombre: "Sucursal 5"
-                    ubicacion: "Calle 5, Ciudad 5"
-
-        404:
+                      nombre: "Producto B"
+                      precio: 150.00
+                      description: "Descripción del producto B"
+                      activo: true
+                sucursal:
+                  id_sucursal: 5
+                  nombre: "Sucursal 5"
+                  ubicacion: "Calle 5, Ciudad 5"
+        '404':
           description: Venta no encontrada
-        500:
+        '500':
           description: Error interno del servidor
          
   /api/v1/ventas/sucursal/{id_sucursal}:
@@ -112,255 +427,170 @@ paths:
           schema:
             type: integer
       responses:
-        200:
+        '200':
           description: OK
-        404:
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Venta'
+        '404':
           description: No se encontraron ventas para la sucursal especificada
-        500:
+        '500':
           description: Error interno del servidor
-          
 
 components:
   schemas:
-   
-    Sucursal:
-      type: object
-      properties:
-        id_sucursal:
-          type: integer
-          description: Identificador único de la sucursal
-          example: 1
-        nombre:
-          type: string
-          description: Nombre de la sucursal
-          example: "Sucursal 1"
-        ubicacion:
-          type: string
-          description: Ubicación de la sucursal
-          example: "Calle 1, Ciudad 1"
-        activo:
-          type: boolean
-          description: Estado de la sucursal (activo/inactivo)
-          example: true
-
-    Venta:
-      type: object
-      properties:
-        id_venta:
-          type: integer
-          description: Identificador único de la venta
-          example: 323
-        id_cliente:
-          type: integer
-          description: Identificador único del cliente
-          example: 43
-        id_sucursal:
-          type: integer
-          description: Identificador único de la sucursal
-          example: 2
-        fecha:
-          type: string
-          format: date-time
-          description: Fecha y hora de la venta
-          example: "2023-10-01T12:00:00Z"
-        total:
-          type: number
-          description: Total de la venta
-          example: 100.50
-
-    Producto:
-      type: object
-      properties:
-        id_producto:
-          type: integer
-          description: Identificador único del producto
-          example: 67
-        nombre:
-          type: string
-          description: Nombre del producto
-          example: "Producto X"
-        precio:
-          type: number
-          description: Precio del producto
-          example: 99.99
-        description:
-          type: string
-          description: Descripción del producto
-          example: "Descripción del producto X"
-        activo:
-          type: boolean
-          description: Estado del producto (activo/inactivo)
-          example: true
-
-    VentaProducto:
-      type: object
-      properties:
-        id_venta_producto:
-          type: integer
-          description: Identificador único de la venta_producto
-          example: 1
-        id_venta:
-          type: integer
-          description: Identificador único de la venta
-          example: 1
-        id_producto:
-          type: integer
-          description: Identificador único del producto
-          example: 1
-        id_movimiento_stock:
-          type: integer
-          description: Identificador único del movimiento de stock
-          example: 1
-        nombre_producto:
-          type: string
-          description: Nombre del producto
-          example: "Producto A"
-        cantidad:
-          type: integer
-          description: Cantidad del producto vendido
-          example: 2
-        precio_unitario:
-          type: number
-          description: Precio unitario del producto
-          example: 50.00
-
     User:
       type: object
       properties:
         id_user:
           type: integer
-          description: Identificador único del usuario
-          example: 1
         email:
           type: string
-          description: Correo electrónica del usuario
-          example: "ZKt9i@example.com"
         password:
           type: string
-          description: Contraseña del usuario
-          example: "password123"
         role:
-          type: enum
-          enum: [marketing, sucursal]
-          description: Rol del usuario (admin, user, etc.)
-          example: "admin"
+          type: enum [sucursal, marketing]
         id_sucursal:
           type: integer
-          description: Identificador único de la sucursal a la que pertenece el usuario
-          example: 1
-    
-    Cliente:
-      type: object
-      properties:
-        id_cliente:
-          type: integer
-          description: Identificador único del cliente
-          example: 1
-        nombre:
-          type: string
-          description: Nombre del cliente
-          example: "Juan Pérez"
-        email:
-          type: string
-          description: Correo electrónico del cliente
-          example: "bV9v1@example.com"
-        telefono:
-          type: string
-          description: Número de teléfono del cliente
-          example: "+1234567890"
-        fecha_registro:
-          type: string
-          format: date-time
-          description: Fecha y hora de registro del cliente
-          example: "2023-10-01T12:00:00Z"
     
     CategoriaProducto:
       type: object
       properties:
         id_categoria_producto:
           type: integer
-          description: Identificador único de la categoría de producto
-          example: 1
         nombre:
           type: string
-          description: Nombre de la categoría de producto
-          example: "Electrónica"
+        productos:
+          type: array
+          items:
+            $ref: '#/components/schemas/Producto'
 
-    Stock:
+    Venta:
       type: object
       properties:
-        id_stock:
+        id_venta:
           type: integer
-          description: Identificador único del stock
-          example: 1
-        id_producto:
+        id_cliente:
           type: integer
-          description: Identificador único del producto
-          example: 1
-        cantidad:
-          type: integer
-          description: Cantidad disponible en stock
-          example: 100
         id_sucursal:
           type: integer
-          description: Identificador único de la sucursal a la que pertenece el stock
-          example: 1
+        fecha:
+          type: string
+          format: date-time
+        total:
+          type: number
+          format: float
 
-    MovimientoStock:
+    VentaDetallada:
       type: object
       properties:
+        id_venta:
+          type: integer
+        id_cliente:
+          type: integer
+        id_sucursal:
+          type: integer
+        fecha:
+          type: string
+          format: date-time
+        total:
+          type: number
+          format: float
+        productos:
+          type: array
+          items:
+            $ref: '#/components/schemas/VentaProducto'
+        sucursal:
+          $ref: '#/components/schemas/Sucursal'
+
+    VentaProducto:
+      type: object
+      properties:
+        id_venta_producto:
+          type: integer
+        id_venta:
+          type: integer
+        id_producto:
+          type: integer
         id_movimiento_stock:
           type: integer
-          description: Identificador único del movimiento de stock
-          example: 1     
+        nombre_producto:
+          type: string
         cantidad:
           type: integer
-          description: Cantidad del movimiento de stock
-          example: 50
-        id_stock:
-          type: integer
-          description: Identificador único del stock
-          example: 1
+        precio_unitario:
+          type: number
+          format: float
+        producto:
+          $ref: '#/components/schemas/Producto'
 
-    Reporte:
+    Producto:
+      type: object
+      properties:
+        id_producto:
+          type: integer
+        id_categoria_producto:
+          type: integer
+        nombre:
+          type: string
+        precio:
+          type: number
+          format: float
+        description:
+          type: string
+        activo:
+          type: boolean
+
+    Sucursal:
+      type: object
+      properties:
+        id_sucursal:
+          type: integer
+        nombre:
+          type: string
+        ubicacion:
+          type: string
+        activo:
+          type: boolean
+        fuenteDatos:
+          type: object
+          $ref: '#/components/schemas/FuenteDatos'
+        ventas:
+          type: array
+          items:
+            $ref: '#/components/schemas/Venta'
+        
+    
+    FuenteDatos:
+      type: object
+      properties:
+        id_fuente:
+          type: integer
+        id_sucursal:
+          type: integer
+        tipo: 
+          type: string
+        configuracion:
+          type: json
+        updated_at:
+          type: datetime
+
+    Reporte: 
       type: object
       properties:
         id_reporte:
           type: integer
-          description: Identificador único del reporte
-          example: 1
         fecha_creacion:
+          type: datetime
+        nombre_archivo:
           type: string
-          format: date-time
-          description: Fecha y hora de inicio del reporte
-          example: "2023-10-01T00:00:00Z"
-        ruta_archivo:
-          type: string
-          description: Ruta del archivo del reporte
-          example: "/reportes/reporte_2023-10-01.csv"
+        registros:
+          type: integer
+        peso_archivo:
+          type: integer
         id_sucursal:
           type: integer
-          description: Identificador único de la sucursal a la que pertenece el reporte
-          example: 1
-
-    FuenteDatos:
-      type: object
-      properties:
-        id_fuente_datos:
-          type: integer
-          description: Identificador único de la fuente de datos
-          example: 1
-          
-        tipo:
-          type: string
-          description: Tipo de fuente de datos (API, Base de Datos, etc.)
-          example: "Base de Datos"
-        configuracion:
-          type: json
-          description: Configuración de la fuente de datos (ejemplo-> URL de API, archivo de Base de Datos, , etc.)
-          example: "URL: http://api.example.com, User: admin, Password: password"
-        updated_at:
-          type: string
-          format: date-time
-          description: Fecha y hora de la última actualización de la fuente de datos
-          example: "2023-10-01T12:00:00Z"
+        
