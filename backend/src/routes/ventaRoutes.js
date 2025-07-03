@@ -4,9 +4,8 @@ import { VentaController } from '../controllers/ventaController.js';
 const router = Router();
 const ventaController = new VentaController();
 
-
-router.get('/', (req, res) => ventaController.getAllVentas(req, res));
-router.get('/:id', (req, res) => ventaController.getVentasById(req, res));
-router.get('/sucursal/:id_sucursal', (req, res) => ventaController.getVentasBySucursal(req, res));
+router.get("/sucursal/:id_sucursal", ventaController.getVentasBySucursal);
+router.get("/detalle/:id", ventaController.getVentasById);  
+router.get("/", ventaController.getAllVentas);
 
 export { router as ventaRouter };
