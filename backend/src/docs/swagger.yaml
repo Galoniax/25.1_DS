@@ -13,6 +13,8 @@ tags:
     description: Gestión de ventas
   - name: Categoria
     description: Gestión de categorias
+  - name: Sucursal
+    description: Gestión de sucursales
   
   
 
@@ -50,7 +52,7 @@ paths:
                     type: string
                     description: Token de autenticación JWT
               example:
-                token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZF91c2VyIjo1LCJlbWFpbCI6InN1Y3Vyc2FsQGVtcHJlc2EuY29tIiwicm9sZSI6InN1Y3Vyc2FsIiwiaWF0IjoxNzUxNTUyMzE1LCJleHAiOjE3NTE2Mzg3MTV9.2qGe3Z3NcglMmpOvtv0mV9IPiROviJdCITcY_HeSFns
+                token: tIidsddfdhshfksjkdkcghdhslcjofrnsxhchdijsopdjenkslhdxcjdnhcbnzjhsdfjkdncdsjfhsnchdccdfwshdbfsdksns
         '401':
           description: Credenciales inválidas
           content:
@@ -139,6 +141,8 @@ paths:
       tags: [Upload]
       summary: Subida de archivos
       description: Este endpoint permite subir archivos al servidor. La respuesta incluirá un mensaje de confirmación.
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -297,7 +301,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CategoriaProducto'
+              type: object
+              properties:
+                nombre:
+                  type: string
               required: 
                 - nombre
       responses:
@@ -322,6 +329,73 @@ paths:
                     description: Mensaje de error
               example:
                 message: "Categoria no creada."
+        '500':
+          description: Error interno del servidor
+
+  /api/v1/sucursales/:
+    get:
+      tags: [Sucursal]
+      summary: Obtener todas las sucursales registradas en la base de datos
+      description: Este endpoint permite obtener todas las sucursales registradas en la base de datos. La respuesta incluirá una lista de objetos de sucursal.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sucursal'
+        '500':
+          description: Error interno del servidor
+  
+  /api/v1/sucursales/{id}:
+    get:
+      tags: [Sucursal]
+      summary: Obtener una sucursal por su ID
+      description: Este endpoint permite obtener una sucursal por su ID. La respuesta incluirá un objeto de sucursal.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sucursal'
+        '500':
+          description: Error interno del servidor
+
+  /api/v1/sucursales/create:
+    post:
+      tags: [Sucursal]
+      summary: Crear una nueva sucursal
+      description: Este endpoint permite crear una nueva sucursal. La respuesta incluirá un objeto de sucursal.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre:
+                  type: string
+                ubicacion:
+                  type: string
+              required: 
+                - nombre
+                - ubicacion
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sucursal'
         '500':
           description: Error interno del servidor
 
@@ -593,4 +667,11 @@ components:
           type: integer
         id_sucursal:
           type: integer
-        
+    
+  
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
