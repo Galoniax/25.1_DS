@@ -9,8 +9,9 @@ const storage = multer.diskStorage({
     cb(null, "uploads/");
   },
   filename: function (req, file, cb) {
+    const idSucursal = req.usuario.id_sucursal;
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname));
+    cb(null, `sucursal${idSucursal}_${uniqueSuffix}${path.extname(file.originalname)}`);
   },
 });
 
@@ -27,7 +28,7 @@ const upload = multer({
     }
   },
   limits: {
-    fileSize: 10 * 1024 * 1024 // 10MB límite
+    fileSize: 5 * 1024 * 1024 // 5MB límite
   }
 });
 
@@ -46,12 +47,21 @@ export class UploadController {
         });
       }
 
+      if (req.file.size > 5 * 1024 * 1024) {
+        return res.status(400).json({
+          success: false,
+          message: 'El archivo es demasiado grande'
+        });
+      }
+
+      const idSucursal = req.usuario.id_sucursal; 
+
       const adapterFactory = new AdapterFactory();
       const tipoArchivo = adapterFactory.obtenerTipoArchivo(req.file.originalname);
       
       console.log(`Procesando archivo: ${req.file.originalname}`);
       
-      const resultado = await this.dataProcessor.procesarArchivo(req.file.path, tipoArchivo);
+      const resultado = await this.dataProcessor.procesarArchivo(req.file.path, tipoArchivo, idSucursal);
       
       res.json({
         success: true,

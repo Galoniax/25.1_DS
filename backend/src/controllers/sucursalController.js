@@ -1,30 +1,5 @@
 import { SucursalService } from "../services/sucursalService.js";
 
-/**
- * @swagger
- * tags:
- *     name: Sucursal
- *     description: Gestión de sucursales
- */
-
-/**
- * @swagger
- * components:
- *   schemas:
- *     Sucursal:
- *       type: object
- *       properties:
- *         id_sucursal:
- *           type: integer
- *           description: ID de la sucursal
- *         nombre:
- *           type: string
- *           description: Nombre de la sucursal
- *         direccion:
- *           type: string
- *           description: Dirección de la sucursal
- */
-
 export class SucursalController {
   constructor() {
     this.sucursalService = SucursalService.getInstance();
@@ -83,14 +58,23 @@ export class SucursalController {
 
   async createSucursal(req, res) {
     try {
-      const { nombre, ubicacion } = req.body;
+      const { nombre, ubicacion, tipo, configuracion } = req.body;
       const nuevaSucursal = await this.sucursalService.createSucursal({
         nombre,
         ubicacion,
+        tipo,
+        configuracion
       });
-      return res.status(201).json(nuevaSucursal);
+
+      return res.status(201).json({ 
+        success: true,
+        data: nuevaSucursal
+      });
     } catch (error) {
-      return res.status(500).json({ message: error.message });
+      return res.status(500).json({ 
+        success: false,
+        message: error.message 
+      });
     }
   }
 

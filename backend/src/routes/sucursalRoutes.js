@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import { SucursalController } from '../controllers/sucursalController.js';
+import { validarConZod } from '../middleware/validacionZod.js';
+import { CreateSucursalSchema } from '../schema/sucursal.schema.js';
 
 const router = Router();
 const sucursalController = new SucursalController();
@@ -8,7 +10,9 @@ const sucursalController = new SucursalController();
 router.get('/', sucursalController.getAllSucursales.bind(sucursalController));
 
 // Crear una nueva sucursal
-router.post('/create', sucursalController.createSucursal.bind(sucursalController));
+router.post('/create', 
+    validarConZod(CreateSucursalSchema),
+    sucursalController.createSucursal.bind(sucursalController));
 
 // Actualizar una sucursal
 router.put('/update/:id', sucursalController.updateSucursal.bind(sucursalController));

@@ -40,7 +40,7 @@ model Sucursal {
 model FuenteDatos {
   id_fuente     Int      @id @default(autoincrement())
   id_sucursal   Int
-  tipo          String
+  tipo          FuenteDatosTipo
   configuracion Json
   updated_at    DateTime @updatedAt
 
@@ -89,6 +89,7 @@ model MovimientoStock {
   id_movimiento_stock Int @id @default(autoincrement())
   cantidad            Int
   id_stock            Int
+  tipo                MovimientoStockTipo // Puede ser 'entrada' o 'salida'
 
   stock          Stock           @relation(fields: [id_stock], references: [id_stock])
   ventaProductos VentaProducto[]
@@ -160,4 +161,17 @@ model User {
 enum Role {
   marketing
   sucursal
+}
+
+enum FuenteDatosTipo {
+  api
+  csv
+  excel
+  json
+  xml
+}
+
+enum MovimientoStockTipo {
+  entrada
+  salida
 }

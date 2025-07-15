@@ -2,10 +2,10 @@ import { CSVAdapter } from "./CSVAdapter.js";
 import { ExcelAdapter } from "./ExcelAdapter.js";
 
 export class AdapterFactory {
-  crearAdapter(tipo) {
+  crearAdapter(tipo, configuracion) {
     switch (tipo) {
       case "csv":
-        return new CSVAdapter();
+        return new CSVAdapter(configuracion);
       //case "excel":
         //return new ExcelAdapter();
       default:

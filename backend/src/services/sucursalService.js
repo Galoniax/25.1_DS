@@ -38,6 +38,9 @@ export class SucursalService {
     try {
       return await prisma.sucursal.findUnique({
         where: { id_sucursal: Number(id) },
+        include: {
+          fuenteDatos: true,
+        },
       });
     } catch (error) {
       console.error("Error fetching sucursal by ID:", error);
@@ -45,19 +48,47 @@ export class SucursalService {
     }
   }
 
-  async createSucursal({ nombre, ubicacion }) {
-    try {
-      const data = {
-        nombre: nombre,
-        ubicacion: ubicacion,
-      };
+  async createSucursal({ nombre, ubicacion, tipo, configuracion }) {
+  try {
+    // Usar transacción para garantizar atomicidad
+    const result = await prisma.$transaction(async (tx) => {
+      // Crear sucursal
+      const nuevaSucursal = await tx.sucursal.create({
+        data: {
+          nombre: nombre.toUpperCase(), 
+          ubicacion: ubicacion.toUpperCase(), 
+          activo: true,
+        }
+      });
 
-      return await prisma.sucursal.create({ data });
-    } catch (error) {
-      console.error("Error creating sucursal:", error);
-      throw new Error("Error creating sucursal");
+      // Crear fuente de datos asociada
+      const fuenteDatos = await tx.fuenteDatos.create({
+        data: {
+          id_sucursal: nuevaSucursal.id_sucursal,
+          tipo,
+          configuracion,
+        },
+      });
+
+      return {
+        sucursal: nuevaSucursal,
+        fuenteDatos
+      };
+    });
+
+    return result;
+    
+  } catch (error) {
+    console.error("Error creando sucursal:", error);
+    
+    // Manejo de errores específicos
+    if (error.code === 'P2002') {
+      throw new Error("El nombre de la sucursal ya existe");
     }
+    
+    throw new Error("Error creando sucursal");
   }
+}
 
   async updateSucursal({ id, sucursal }) {
     try {

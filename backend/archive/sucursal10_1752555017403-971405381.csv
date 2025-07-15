@@ -1,0 +1,11 @@
+id_venta,venta_fecha,venta_total,cliente_email,cliente_nombre,precio_unitario,producto_nombre,sucursal_nombre,producto_categoria,cantidad
+1,2025-07-15,850.00,ana.garcia@email.com,Ana García,425.00,Smartphone Samsung,Sucursal Centro,Electrónicos,2
+2,2025-07-15,1200.50,carlos.lopez@email.com,Carlos López,300.25,Tablet Apple,Sucursal Centro,Electrónicos,4
+3,2025-07-15,75.00,maria.rodriguez@email.com,María Rodríguez,25.00,Auriculares Bluetooth,Sucursal Centro,Accesorios,3
+4,2025-07-15,450.00,pedro.martinez@email.com,Pedro Martínez,150.00,Cargador Inalámbrico,Sucursal Centro,Accesorios,3
+5,2025-07-15,2100.00,laura.fernandez@email.com,Laura Fernández,700.00,Notebook Lenovo,Sucursal Centro,Computadoras,3
+6,2025-07-15,320.00,diego.santos@email.com,Diego Santos,80.00,Mouse Gaming,Sucursal Centro,Accesorios,4
+7,2025-07-15,1500.00,sofia.torres@email.com,Sofía Torres,500.00,Monitor 24 pulgadas,Sucursal Centro,Monitores,3
+8,2025-07-15,180.00,rodrigo.paz@email.com,Rodrigo Paz,90.00,Teclado Mecánico,Sucursal Centro,Accesorios,2
+9,2025-07-15,600.00,valentina.cruz@email.com,Valentina Cruz,200.00,Webcam HD,Sucursal Centro,Cámaras,3
+10,2025-07-15,950.00,mateo.jimenez@email.com,Mateo Jiménez,475.00,Impresora Multifunción,Sucursal Centro,Impresoras,2

@@ -1,4 +1,5 @@
 import { DataPersistenceService } from "./DataPersistenceService.js";
+import { prisma } from "../providers/prisma.js";
 
 export class DataProcessorService {
   constructor(adapterFactory) {
@@ -12,10 +13,17 @@ export class DataProcessorService {
     DataProcessorService.instance = this;
   }
 
-  async procesarArchivo(filePath, tipoArchivo) {
-    console.log(`Procesando archivo: ${filePath} de tipo ${tipoArchivo}`);
-    
-    const adapter = this.adapterFactory.crearAdapter(tipoArchivo);
+  async procesarArchivo(filePath, tipoArchivo, idSucursal) {
+    console.log(
+      `Procesando archivo: ${filePath} de tipo ${tipoArchivo} para sucursal ${idSucursal}`
+    );
+
+    const configuracion = await this.obtenerConfiguracion(idSucursal);
+
+    const adapter = this.adapterFactory.crearAdapter(
+      tipoArchivo,
+      configuracion
+    );
     const datos = await adapter.convertirFormatoUnificado(filePath);
 
     const sinDup = this.eliminarDuplicados(datos);
@@ -24,28 +32,13 @@ export class DataProcessorService {
     // Normaliza los datos antes de agregarlos
     const normalizados = enriquecidos.map((reg) => ({
       ...reg,
-      fecha: reg.venta?.fecha || reg.venta_fecha || reg.fecha || "",
-      venta: reg.venta?.id || reg.venta_id || reg.id_venta || "",
-      cliente: reg.cliente?.nombre || reg.cliente_nombre || reg.cliente || "",
-      producto:
-        reg.producto?.nombre ||
-        reg.producto_nombre ||
-        reg.nombre_producto ||
-        "",
-      categoria:
-        reg.producto?.categoria ||
-        reg.categoria_producto ||
-        reg.categoria ||
-        "",
-      sucursal:
-        reg.sucursal?.nombre ||
-        reg.nombre_sucursal ||
-        reg.sucursal_nombre ||
-        "",
-      cantidad: Number(reg.cantidad || reg.producto?.cantidad || 0),
-      precio: Number(
-        reg.precio_unitario || reg.producto?.precio_unitario || reg.precio || 0
-      ),
+      cantidad: Number(reg.cantidad ?? 0),
+      precio: Number(reg.precio ?? 0),
+      fecha: reg.fecha ?? "",
+      producto: reg.producto ?? "",
+      sucursal: reg.sucursal ?? "",
+      cliente: reg.cliente ?? "",
+      categoria: reg.categoria ?? "",
     }));
 
     this.datosUnificados.push(...normalizados);
@@ -72,16 +65,20 @@ export class DataProcessorService {
     return res;
   }
 
-  generarHashRegistro(reg) {
-    // Soporta tanto objetos planos como anidados
-    const fecha = reg.fecha || reg.venta?.fecha;
-    const producto = reg.producto_nombre || reg.producto?.nombre;
-    const sucursal = reg.nombre_sucursal || reg.sucursal?.nombre;
-    const cantidad = reg.cantidad || reg.producto?.cantidad;
-    const precio = reg.precio_unitario || reg.producto?.precio_unitario;
-    const cliente = reg.cliente_email || reg.cliente?.email;
+  camposClave = [
+    "fecha",
+    "producto",
+    "sucursal",
+    "cantidad",
+    "precio",
+    "cliente",
+    "categoria",
+    "venta_id",
+    "total",
+  ];
 
-    return `${fecha}_${producto}_${sucursal}_${cantidad}_${precio}_${cliente}`;
+  generarHashRegistro(reg) {
+    return this.camposClave.map((campo) => reg[campo] ?? "").join("_");
   }
 
   async enriquecerDatos(datos) {
@@ -129,5 +126,12 @@ export class DataProcessorService {
   limpiarDatos() {
     this.datosUnificados = [];
     this.duplicados.clear();
+  }
+
+  async obtenerConfiguracion(idSucursal) {
+    const fuente = await prisma.fuenteDatos.findFirst({
+      where: { id_sucursal: idSucursal },
+    });
+    return fuente?.configuracion || null;
   }
 }

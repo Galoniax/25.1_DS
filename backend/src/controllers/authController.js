@@ -3,7 +3,6 @@ import { comparePassword } from "../utils/hash.js";
 import { hashPassword } from "../utils/hash.js";
 import { createToken, verifyToken } from "../utils/jwt.js";
 
-
 export class AuthController {
   constructor() {
     this.userService = UserService.getInstance();
@@ -28,6 +27,7 @@ export class AuthController {
         id_user: user.id_user,
         email: user.email,
         role: user.role,
+        id_sucursal: user.id_sucursal || null,
       });
       return res.status(200).json({ token });
     } catch (error) {
@@ -39,35 +39,39 @@ export class AuthController {
     const { email, password, role, id_sucursal } = req.body;
 
     try {
-      const user = await this.userService.getByEmail(email);
+      const existingUser = await this.userService.getByEmail(email);
 
-      if (user) {
-        return res.status(409).json({ message: "El email ya está registrado" });
+      if (existingUser) {
+        return res.status(409).json({
+          success: false,
+          message: "El email ya está registrado",
+        });
       }
-      if (!email || !password || !role) {
-        return res.status(400).json({ message: "Faltan datos requeridos" });
-      }
-
-      if (role !== "marketing" && role !== "sucursal") {
-        return res.status(400).json({ message: "Rol no permitido" });
-      }
-
-      
-    if (role === "sucursal" && !id_sucursal) {
-      return res.status(400).json({ message: "Falta id_sucursal para el rol 'sucursal'" });
-    }
 
       const hashedPassword = await hashPassword(password);
-      const newUser = await this.userService.create({
+
+      const userData = {
         email,
         password: hashedPassword,
         role,
-        ...(role === "sucursal" && { id_sucursal }),
-      });
+      };
 
-      return res.status(201).json(newUser);
+      if (id_sucursal) {
+        userData.id_sucursal = id_sucursal;
+      }
+
+      const newUser = await this.userService.create(userData);
+
+      return res.status(201).json({
+        success: true,
+        data: newUser,
+      });
     } catch (error) {
-      return res.status(500).json({ message: error.message });
+      console.error("Error en register:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Error interno del servidor",
+      });
     }
   }
 }

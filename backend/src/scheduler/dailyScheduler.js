@@ -47,16 +47,28 @@ export class DailyScheduler {
       // 1. Procesar todos los archivos CSV de uploads/
       const uploadDir = path.resolve("uploads");
       const archiveDir = path.resolve("archive");
-       const files = fs.readdirSync(uploadDir).filter(f =>
-        [".csv", ".xlsx", ".xls"].some(ext => f.toLowerCase().endsWith(ext))
-      );
+      const files = fs
+        .readdirSync(uploadDir)
+        .filter((f) =>
+          [".csv", ".xlsx", ".xls"].some((ext) => f.toLowerCase().endsWith(ext))
+        );
 
       for (const f of files) {
         const fp = path.join(uploadDir, f);
-         try {
+        try {
           // Detecta tipo de archivo dinámicamente
-          const tipoArchivo = this.dataProcessor.adapterFactory.obtenerTipoArchivo(f);
-          await this.dataProcessor.procesarArchivo(fp, tipoArchivo);
+          const tipoArchivo =
+            this.dataProcessor.adapterFactory.obtenerTipoArchivo(f);
+
+          const match = f.match(/^sucursal(\d+)_/);
+          const idSucursal = match ? parseInt(match[1]) : null;
+          if (!idSucursal) {
+            console.error(
+              `No se pudo determinar la sucursal para el archivo ${f}`
+            );
+            continue;
+          }
+          await this.dataProcessor.procesarArchivo(fp, tipoArchivo, idSucursal);
           fs.renameSync(fp, path.join(archiveDir, f));
         } catch (e) {
           console.error("Error procesando archivo:", f, e);
